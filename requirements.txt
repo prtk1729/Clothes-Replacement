@@ -1,0 +1,10 @@
+torch
+torchvision
+Pillow
+diffusers
+transformers
+accelerate
+xformers
+opencv-python
+matplotlib
+numpy
