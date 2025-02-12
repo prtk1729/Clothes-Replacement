@@ -15,18 +15,6 @@ def initialize_sam_model(checkpoint_path = Path(SAM_CHECKPOINT), model_type = "v
     return sam_model
 
 
-def generate_masks(sam_model, image, pred_iou_thresh=0.9, points_per_side = 32):
-    ''' Generate masks for a given image and return the masks'''
-    mask_generator = SamAutomaticMaskGenerator( pred_iou_thresh = pred_iou_thresh, 
-                                                points_per_side = points_per_side, 
-                                                model = sam_model,
-                                                stability_score_thresh = 0.92,
-                                                min_mask_region_area = 100
-                                                )
-    return mask_generator.generate(image)
-
-
-
 def preprocess():
     ''' 1. Crops and makes a square image
         2. Resize image to 512, 512 (for memory issues)
@@ -41,8 +29,24 @@ def preprocess():
                         resample = Image.LANCZOS )
     
     # numpify
-    source_image = np.asarray(source_image)
-    return source_image
+    segmented_image = np.asarray(source_image)
+    return source_image, segmented_image
+
+
+def generate_masks(sam_model, image, pred_iou_thresh=0.99, points_per_side = 32):
+    ''' Generate masks for a given image and return the masks'''
+    mask_generator = SamAutomaticMaskGenerator( pred_iou_thresh = pred_iou_thresh, 
+                                                points_per_side = points_per_side, 
+                                                model = sam_model,
+                                                stability_score_thresh = 0.92,
+                                                min_mask_region_area = 100,
+                                                crop_n_layers=1,
+                                                crop_n_points_downscale_factor=2,
+                                                )
+    return mask_generator.generate(image)
+
+
+
 
 
 
@@ -56,8 +60,8 @@ if __name__ == "__main__":
     ### Link: https://unsplash.com/photos/AsJirOOLN_s
     # Get the image from input_images
 
-    image = preprocess()
-    masks = generate_masks(sam_model, image)
+    source_image, segmented_image = preprocess()
+    masks = generate_masks(sam_model, segmented_image)
 
     print( type(masks) )
     print( masks )
