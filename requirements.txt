@@ -8,3 +8,4 @@ xformers
 opencv-python
 matplotlib
 numpy
+pathlib
